@@ -7,10 +7,13 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 
+import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.provider.ContactsContract;
+import android.support.v4.app.ActivityCompat;
 
 @NativePlugin()
 public class ContactsPlugin extends Plugin {
@@ -30,6 +33,10 @@ public class ContactsPlugin extends Plugin {
 
     @PluginMethod()
     public void getContacts(PluginCall call) {
+        if (context.checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_CONTACTS}, );
+        }
+
         JSArray contacts = new JSArray();
 
         ContentResolver contentResolver = context.getContentResolver();
