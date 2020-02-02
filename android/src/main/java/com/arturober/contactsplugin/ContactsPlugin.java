@@ -6,6 +6,7 @@ import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.PluginRequestCodes;
 
 import android.Manifest;
 import android.content.ContentResolver;
@@ -18,6 +19,7 @@ import android.support.v4.app.ActivityCompat;
 @NativePlugin()
 public class ContactsPlugin extends Plugin {
     private Context context;
+    static final int REQUEST_READ_CONTACTS = 8000;
     private static final String[] CONTACTS_PROJECTION = {
             ContactsContract.Contacts._ID,
             ContactsContract.Contacts.LOOKUP_KEY,
@@ -33,10 +35,17 @@ public class ContactsPlugin extends Plugin {
 
     @PluginMethod()
     public void getContacts(PluginCall call) {
-        if (context.checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_CONTACTS}, 1);
+        if(!hasPermission(Manifest.permission.READ_CONTACTS)) {
+            pluginRequestPermissions(new String[]{
+                    Manifest.permission.READ_CONTACTS
+            }, REQUEST_READ_CONTACTS);
+            saveCall(call);
+        } else {
+            readContacts(call);
         }
+    }
 
+    private void readContacts(PluginCall call) {
         JSArray contacts = new JSArray();
 
         ContentResolver contentResolver = context.getContentResolver();
@@ -52,5 +61,29 @@ public class ContactsPlugin extends Plugin {
         JSObject res = new JSObject();
         res.put("contacts", contacts);
         call.success(res);
+    }
+
+    @Override
+    protected void handleRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.handleRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        PluginCall savedCall = getSavedCall();
+        if (savedCall == null) {
+            return;
+        }
+
+        for(int result : grantResults) {
+            if (result == PackageManager.PERMISSION_DENIED) {
+                savedCall.error("User denied reading contacts");
+                return;
+            }
+        }
+
+        if (savedCall.getMethodName().equals("getContacts")) {
+            readContacts(savedCall);
+        } else {
+            savedCall.resolve();
+            savedCall.release(bridge);
+        }
     }
 }

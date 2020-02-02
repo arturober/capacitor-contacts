@@ -1,6 +1,6 @@
 {
   "name": "@arturober/capacitor-contacts",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A plugin for getting your contacts from the phone",
   "main": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
