@@ -34,7 +34,7 @@ public class ContactsPlugin extends Plugin {
     @PluginMethod()
     public void getContacts(PluginCall call) {
         if (context.checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_CONTACTS}, );
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_CONTACTS}, 1);
         }
 
         JSArray contacts = new JSArray();
