@@ -16,7 +16,10 @@ import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 
-@NativePlugin()
+@NativePlugin(
+        permissions = {Manifest.permission.READ_CONTACTS},
+        permissionRequestCode = ContactsPlugin.REQUEST_READ_CONTACTS
+)
 public class ContactsPlugin extends Plugin {
     private Context context;
     static final int REQUEST_READ_CONTACTS = 8000;
@@ -24,8 +27,8 @@ public class ContactsPlugin extends Plugin {
             ContactsContract.Contacts._ID,
             ContactsContract.Contacts.LOOKUP_KEY,
             ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
-            ContactsContract.Contacts.HAS_PHONE_NUMBER,
-            ContactsContract.CommonDataKinds.Phone.NUMBER
+            ContactsContract.Contacts.HAS_PHONE_NUMBER
+            //ContactsContract.CommonDataKinds.Phone.NUMBER
     };
 
     public void load() {
@@ -53,8 +56,8 @@ public class ContactsPlugin extends Plugin {
         while (cursor.moveToNext()) {
             JSObject contact = new JSObject();
             contact.put("name", cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)));
-            contact.put("phone", cursor.getInt(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)) > 0 ?
-                    cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)) : "");
+            //contact.put("phone", cursor.getInt(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)) > 0 ?
+            //        cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)) : "");
             contacts.put(contact);
         }
 
