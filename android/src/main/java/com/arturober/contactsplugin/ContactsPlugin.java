@@ -62,9 +62,11 @@ public class ContactsPlugin extends Plugin {
                     phones.put(phone);
                 }
                 contact.put("phones", phones);
+                pCur.close();
             }
             contacts.put(contact);
         }
+        cursor.close();
 
         JSObject res = new JSObject();
         res.put("contacts", contacts);
