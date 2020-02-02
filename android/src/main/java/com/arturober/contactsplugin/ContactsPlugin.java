@@ -23,13 +23,6 @@ import android.support.v4.app.ActivityCompat;
 public class ContactsPlugin extends Plugin {
     private Context context;
     static final int REQUEST_READ_CONTACTS = 8000;
-    private static final String[] CONTACTS_PROJECTION = {
-            ContactsContract.Contacts._ID,
-            ContactsContract.Contacts.LOOKUP_KEY,
-            ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
-            ContactsContract.Contacts.HAS_PHONE_NUMBER
-            //ContactsContract.CommonDataKinds.Phone.NUMBER
-    };
 
     public void load() {
         // Get singleton instance of database
@@ -52,12 +45,24 @@ public class ContactsPlugin extends Plugin {
         JSArray contacts = new JSArray();
 
         ContentResolver contentResolver = context.getContentResolver();
-        Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, CONTACTS_PROJECTION, null, null, null);
+        Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
         while (cursor.moveToNext()) {
             JSObject contact = new JSObject();
             contact.put("name", cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)));
-            //contact.put("phone", cursor.getInt(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)) > 0 ?
-            //        cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)) : "");
+            contact.put("photo", cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.PHOTO_THUMBNAIL_URI)));
+
+            if(cursor.getInt(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)) > 0) {
+                Cursor pCur = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,
+                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = ?",
+                        new String[]{cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID))}, null);
+
+                JSArray phones = new JSArray();
+                while (pCur.moveToNext()) {
+                    String phone = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                    phones.put(phone);
+                }
+                contact.put("phones", phones);
+            }
             contacts.put(contact);
         }
 
